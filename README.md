@@ -1,1 +1,1 @@
-# VotingDApp
+VotingDApp is an innovative project aimed at leveraging the power of blockchain technology to secure and streamline the voting process. Built on ASP.NET Core, it presents a decentralized application (DApp) that promises to enhance the integrity, transparency, and reliability of elections. This repository contains the foundational code necessary to establish the host builder, configure essential services, and execute the application, propelling us towards a future of secure and accessible voting mechanisms.
