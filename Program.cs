@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
-using System.IO;
 
 namespace MyAspNetCoreApp
 {
@@ -16,13 +14,8 @@ namespace MyAspNetCoreApp
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
-
-                    webBuilder.ConfigureAppConfiguration((hostingContext, config) =>
-                    {
-                        var env = hostingContext.HostingEnvironment;
-                        config.AddEnvironmentVariables(prefix: "ASPNETCORE_");
-                    });
+                    webBuilder
+                    .UseStartup<Startup>();
                 });
     }
 }
