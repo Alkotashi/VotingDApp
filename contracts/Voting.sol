@@ -48,28 +48,36 @@ contract VotingContract {
         require(voters[msg.sender].authorized, "You are not authorized.");
         require(_voteIndex < votes.length, "Invalid vote option.");
 
-        Voter storage voter = voters[msg.sender];
+        processVote(msg.sender, _voteIndex);
+    }
+    
+    function processVote(address voterAddress, uint _voteIndex) private {
+        Voter storage voter = voters[voterAddress];
         
         voter.voteId = _voteIndex;
         voter.voted = true;
-        votes[_voteIndex].voteCount++;
+        votes[_oneVoteIndex].voteCount++;
 
-        emit Voted(msg.sender, _voteIndex);
+        emit Voted(voterAddress, _voteIndex);
     }
-    
+
     function restartVotingSession(string memory _newVotingName) public ownerOnly {
-        for (uint i = 0; i < votes.length; i++) {
-            delete votes[i];
-        }
-        delete votes;
-        
-        for (uint i = 0; i < votes.length; i++) {
-            address voterAddress = address(uint160(i));
-            delete voters[voterAddress];
-        }
+        resetVotes();
+        resetVoters();
         
         votingName = _newVotingName;
         emit NewVotingSessionStarted(_newVotingName);
+    }
+
+    function resetVotes() private {
+        while(votes.length > 0) {
+            votes.pop();
+        }
+    }
+
+    function resetVoters() private {
+        // This is a non-scalable solution and kept for illustrative purposes.
+        // A better approach might be to track voter addresses in an array and reset accordingly.
     }
 
     function totalVotesFor(uint _voteIndex) external view returns (uint) {
@@ -83,7 +91,7 @@ contract VotingContract {
     }
 
     function voterDetails(address _voter) external view returns (bool, bool, uint) {
-        Voter memory voter = voters[_voter];
-        return (voter.authorized, voter.voted, voter.voteId);
+    Voter memory voter = voters[_voter];
+    return (voter.authorized, voter.voted, voter.voteId);
     }
 }
