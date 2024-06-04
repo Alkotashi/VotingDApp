@@ -16,7 +16,7 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddControllers();
-
+        
         services.AddDbContext<YourDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
@@ -25,9 +25,14 @@ public class Startup
         services.AddSwaggerGen();
     }
 
+    public bool IsDevelopment(IWebHostEnvironment env)
+    {
+        return env.EnvironmentName == "Development";
+    } 
+
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        if (env.EnvironmentName == "Development")
+        if (IsDevelopment(env))
         {
             app.UseDeveloperExceptionPage();
         }
@@ -36,16 +41,21 @@ public class Startup
 
         app.UseAuthorization();
 
+        ConfigureSwagger(app);
+
+        app.UseEndpoints(endendants =>
+        {
+            endendants.Map.PropTypes();
+        });
+    }
+
+    private static void ConfigureSwagger(IApplicationBuilder app)
+    {
         app.UseSwagger();
         app.UseSwaggerUI(c =>
         {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API V1");
             c.RoutePrefix = string.Empty;
-        });
-
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllers();
         });
     }
 }
