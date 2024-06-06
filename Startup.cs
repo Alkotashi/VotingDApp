@@ -17,12 +17,24 @@ public class Startup
     {
         services.AddControllers();
         
+        // Configuring the DbContext with SQL Server
         services.AddDbContext<YourDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
+        // Example Service (You should replace with actual service implementations)
         services.AddScoped<YourServiceInterface, YourServiceImplementation>();
 
+        // Swagger Service for API Documentation
         services.AddSwaggerGen();
+
+        // Enabling CORS
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", builder =>
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader());
+        });
     }
 
     public bool IsDevelopment(IWebHostEnvironment env)
@@ -39,13 +51,16 @@ public class Startup
 
         app.UseRouting();
 
+        // Applying the CORS policy globally (or you can apply per controller or action)
+        app.UseCors("AllowAll");
+
         app.UseAuthorization();
 
         ConfigureSwagger(app);
 
-        app.UseEndpoints(endendants =>
+        app.UseEndpoints(endpoints =>
         {
-            endendants.Map.PropTypes();
+            endpoints.MapControllers(); // Corrected to map controllers properly
         });
     }
 
