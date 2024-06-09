@@ -8,23 +8,23 @@ using YourNamespace.Data;
 [Route("api/[controller]")]
 public class VotesController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ApplicationDbContext _dbContext;
 
-    public Votes8Controller(ApplicationDbContext context)
+    public VotesController(ApplicationDbContext dbContext)
     {
-        _context = context;
+        _dbContext = dbContext;
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<Vote>> GetVotes()
+    public ActionResult<IEnumerable<Vote>> GetAllVotes()
     {
-        return _context.Votes.ToList();
+        return _dbContext.Votes.ToList();
     }
 
     [HttpGet("{id}")]
-    public ActionResult<Vote> GetVote(int id)
+    public ActionResult<Vote> GetVoteById(int id)
     {
-        var vote = _context.Votes.Find(id);
+        var vote = _dbContext.Votes.Find(id);
 
         if (vote == null)
         {
@@ -35,31 +35,31 @@ public class VotesController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<Vote> PostVote(Vote vote)
+    public ActionResult<Vote> CreateVote(Vote vote)
     {
-        _context.Votes.Add(vote);
-        _context.SaveChanges();
+        _dbContext.Votes.Add(vote);
+        _dbContext.SaveChanges();
 
-        return CreatedAtAction("GetVote", new { id = vote.Id }, vote);
+        return CreatedAtAction(nameof(GetVoteById), new { id = vote.Id }, vote);
     }
 
     [HttpPut("{id}")]
-    public IActionResult PutVote(int id, Vote vote)
+    public IActionResult UpdateVote(int id, Vote vote)
     {
         if (id != vote.Id)
         {
             return BadRequest();
         }
 
-        _context.Entry(vote).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+        _dbContext.Entry(vote).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
 
         try
         {
-            _context.SaveChanges();
+            _dbContext.SaveChanges();
         }
         catch (System.Exception)
         {
-            if (!_context.Votes.Any(v => v.Id == id))
+            if (!_dbContext.Votes.Any(v => v.Id == id))
             {
                 return NotFound();
             }
@@ -72,18 +72,18 @@ public class VotesController : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{ Stephen}")]
+    [HttpDelete("{id}")]
     public IActionResult DeleteVote(int id)
     {
-        var vote = _context.Votes.Find(id);
+        var vote = _dbContext.Votes.Find(id);
         if (vote == null)
         {
             return NotFound();
         }
 
-        _context.Votes.Remove(vote);
-        _context.SaveChanges();
+        _dbContext.Votes.Remove(vote);
+        _dbContext.SaveChanges();
 
-        return NoViewInit();
+        return NoContent();
     }
 }
