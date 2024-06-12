@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using YourNamespace.Models;
@@ -18,27 +20,56 @@ public class VotesController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<Vote>> GetAllVotes()
     {
-        return _dbContext.Votes.ToList();
+        try
+        {
+            return _dbContext.Votes.ToList();
+        }
+        catch (Exception ex)
+        {
+            // Log the exception details
+            return StatusCode(500, "An error occurred while retrieving votes. Please try again later.");
+        }
     }
 
     [HttpGet("{id}")]
     public ActionResult<Vote> GetVoteById(int id)
     {
-        var vote = _dbContext.Votes.Find(id);
-
-        if (vote == null)
+        try
         {
-            return NotFound();
-        }
+            var vote = _dbContext.Votes.Find(id);
 
-        return vote;
+            if (vote == null)
+            {
+                return NotFound();
+            }
+
+            return vote;
+        }
+        catch (Exception ex)
+        {
+            // Log the exception details
+            return StatusCode(500, "An error occurred while retrieving the vote. Please try again later.");
+        }
     }
 
     [HttpPost]
     public ActionResult<Vote> CreateVote(Vote vote)
     {
-        _dbContext.Votes.Add(vote);
-        _dbContext.SaveChanges();
+        try
+        {
+            _dbContext.Votes.Add(vote);
+            _dbContext.SaveChanges();
+        }
+        catch (DbUpdateException ex)
+        {
+            // Log the exception details
+            return StatusCode(500, "An error occurred while creating the vote. Please try again later.");
+        }
+        catch (Exception ex)
+        {
+            // Log the unknown exception
+            return StatusCode(500, "An unexpected error occurred. Please try again later.");
+        }
 
         return CreatedAtAction(nameof(GetVoteById), new { id = vote.Id }, vote);
     }
@@ -51,13 +82,13 @@ public class VotesController : ControllerBase
             return BadRequest();
         }
 
-        _dbContext.Entry(vote).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+        _dbContext.Entry(vote).State = EntityState.Modified;
 
         try
         {
             _dbContext.SaveChanges();
         }
-        catch (System.Exception)
+        catch (DbUpdateConcurrencyException ex)
         {
             if (!_dbContext.Votes.Any(v => v.Id == id))
             {
@@ -65,24 +96,38 @@ public class VotesController : ControllerBase
             }
             else
             {
-                throw;
+                // Log the exception details
+                return StatusCode(500, "An error occurred while updating the vote. Please try again later.");
             }
+        }
+        catch (Exception ex)
+        {
+            // Log the unknown exception
+            return StatusCode(500, "An unexpected error occurred. Please try again later.");
         }
 
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{ip}")]
     public IActionResult DeleteVote(int id)
     {
-        var vote = _dbContext.Votes.Find(id);
-        if (vote == null)
+        try
         {
-            return NotFound();
-        }
+            var vote = _dbContext.Votes.Find(id);
+            if (vote == null)
+            {
+                return NotFound();
+            }
 
-        _dbContext.Votes.Remove(vote);
-        _dbContext.SaveChanges();
+            _dbContext.Votes.Remove(vote);
+            _dbContext.SaveChanges();
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            return StatusCode(500, "An error occurred while deleting the vote. Please try again later.");
+        }
 
         return NoContent();
     }
