@@ -6,129 +6,120 @@ using System.Linq;
 using YourNamespace.Models;
 using YourNamespace.Data;
 
-[ApiController]
-[Route("api/[controller]")]
-public class VotesController : ControllerBase
+namespace YourNamespace.Controllers
 {
-    private readonly ApplicationDbContext _dbContext;
-
-    public VotesController(ApplicationDbContext dbContext)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class VotesController : ControllerBase
     {
-        _dbContext = dbContext;
-    }
+        private readonly ApplicationDbContext _dbContext;
 
-    [HttpGet]
-    public ActionResult<IEnumerable<Vote>> GetAllVotes()
-    {
-        try
+        public VotesController(ApplicationDbContext dbContext)
         {
-            return _dbContext.Votes.ToList();
+            _dbContext = dbContext;
         }
-        catch (Exception ex)
-        {
-            // Log the exception details
-            return StatusCode(500, "An error occurred while retrieving votes. Please try again later.");
-        }
-    }
 
-    [HttpGet("{id}")]
-    public ActionResult<Vote> GetVoteById(int id)
-    {
-        try
+        [HttpGet]
+        public ActionResult<IEnumerable<Vote>> GetAllVotes()
         {
-            var vote = _dbContext.Votes.Find(id);
-
-            if (vote == null)
+            try
             {
-                return NotFound();
+                return Ok(_dbContext.Votes.ToList());
             }
-
-            return vote;
-        }
-        catch (Exception ex)
-        {
-            // Log the exception details
-            return StatusCode(500, "An error occurred while retrieving the vote. Please try again later.");
-        }
-    }
-
-    [HttpPost]
-    public ActionResult<Vote> CreateVote(Vote vote)
-    {
-        try
-        {
-            _dbContext.Votes.Add(vote);
-            _dbContext.SaveChanges();
-        }
-        catch (DbUpdateException ex)
-        {
-            // Log the exception details
-            return StatusCode(500, "An error occurred while creating the vote. Please try again later.");
-        }
-        catch (Exception ex)
-        {
-            // Log the unknown exception
-            return StatusCode(500, "An unexpected error occurred. Please try again later.");
-        }
-
-        return CreatedAtAction(nameof(GetVoteById), new { id = vote.Id }, vote);
-    }
-
-    [HttpPut("{id}")]
-    public IActionResult UpdateVote(int id, Vote vote)
-    {
-        if (id != vote.Id)
-        {
-            return BadRequest();
-        }
-
-        _dbContext.Entry(vote).State = EntityState.Modified;
-
-        try
-        {
-            _dbContext.SaveChanges();
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            if (!_dbContext.Votes.Any(v => v.Id == id))
+            catch (Exception)
             {
-                return NotFound();
-            }
-            else
-            {
-                // Log the exception details
-                return StatusCode(500, "An error occurred while updating the vote. Please try again later.");
+                return StatusCode(500, "An error occurred while retrieving votes. Please try again later.");
             }
         }
-        catch (Exception ex)
+
+        [HttpGet("{id}")]
+        public ActionResult<Vote> GetVoteById(int id)
         {
-            // Log the unknown exception
-            return StatusCode(500, "An unexpected error occurred. Please try again later.");
+            try
+            {
+                var vote = _dbContext.Votes.Find(id);
+                if (vote == null)
+                {
+                    return NotFound();
+                }
+                return vote;
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while retrieving the vote. Please try again later.");
+            }
         }
 
-        return NoContent();
-    }
-
-    [HttpDelete("{ip}")]
-    public IActionResult DeleteVote(int id)
-    {
-        try
+        [HttpPost]
+        public ActionResult<Vote> CreateVote([FromBody] Vote vote)
         {
-            var vote = _dbContext.Votes.Find(id);
-            if (vote == null)
+            try
             {
-                return NotFound();
+                _dbContext.Votes.Add(vote);
+                _dbContext.SaveChanges();
+                return CreatedAtAction(nameof(GetVoteById), new { id = vote.Id }, vote);
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "An error occurred while creating the vote. Please try again later.");
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult UpdateVote(int id, [FromBody] Vote vote)
+        {
+            if (id != vote.Id)
+            {
+                return BadRequest();
             }
 
-            _dbContext.Votes.Remove(vote);
-            _dbContext.SaveChanges();
-        }
-        catch (Exception ex)
-        {
-            // Log the exception
-            return StatusCode(500, "An error occurred while deleting the vote. Please try again later.");
+            _dbContext.Entry(vote).State = EntityState.Modified;
+
+            try
+            {
+                _dbContext.SaveChanges();
+                return NoContent();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_dbContext.Votes.Any(v => v.Id == id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    return StatusCode(500, "An error occurred while updating the vote. Please try again later.");
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An unexpected error occurred. Please try again later.");
+            }
         }
 
-        return NoContent();
+        [HttpDelete("{id}")]
+        public IActionResult DeleteVote(int id)
+        {
+            try
+            {
+                var vote = _dbContext.Votes.Find(id);
+                if (vote == null)
+                {
+                    return NotFound();
+                }
+
+                _dbContext.Votes.Remove(vote);
+                _dbContext.SaveChanges();
+                return NoContent();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while deleting the vote. Please try again later.");
+            }
+        }
     }
 }
