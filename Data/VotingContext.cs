@@ -29,9 +29,8 @@ public class VotingContext : DbContext
         }
         catch (Exception ex)
         {
-            // Log the exception (Consider using a logging library)
             Console.Error.WriteLine($"An error occurred while configuring the database: {ex.Message}");
-            throw; // Re-throwing the exception to make it clear that the application cannot continue without proper database configuration
+            throw;
         }
     }
 }
@@ -55,9 +54,8 @@ public static class SimpleCache
         }
         catch (Exception ex)
         {
-            // Log the exception (Consider using a logging framework here)
             Console.Error.WriteLine($"An error occurred in the caching mechanism: {ex.Message}");
-            throw; // Consider whether you want to throw the exception further or handle it gracefully
+            throw;
         }
     }
 }
@@ -68,25 +66,23 @@ public class VotingService
 
     public VotingService(VotingContext context)
     {
-        _context = context;
-    }
+            _context = context;
+        }
 
-    public int GetTotalVotes()
-    {
-        string cacheKey = "totalVotes";
-        try
+        public int GetTotalVotes()
         {
-            return SimpleCache.GetOrAdd(cacheKey, () =>
+            string cacheKey = "totalVotes";
+            try
             {
-                return _context.Votes.Count();
-            });
+                return SimpleCache.GetOrAdd(cacheKey, () =>
+                {
+                    return _context.Votes.Count();
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"An error occurred when trying to get the total number of votes: {ex.Message}");
+                throw;
+            }
         }
-        catch (Exception ex)
-        {
-            // Log the detailed error message, consider using a logging library
-            Console.Error.WriteLine($"An error occurred when trying to get the total number of votes: {ex.Message}");
-            // Depending on your use case, you might want to return a default value or rethrow the exception
-            throw; // Here is shown as re-throwing, adjust according to your error handling policy
-        }
-    }
 }
