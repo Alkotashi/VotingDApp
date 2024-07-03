@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-import System.Linq;
+using System.Linq;
 
 public class Vote
 {
@@ -16,12 +16,13 @@ public interface IVoteService
     Vote GetVoteById(int id);
     void CreateVote(string candidate);
     void CastVote(int id);
+    IDictionary<string, int> GetVoteCounts(); // Added function to get vote counts
 }
 
 public class VoteService : IVoteService
 {
     private readonly List<Vote> votes = new();
-
+    
     public IEnumerable<Vote> GetAllVotes() => votes;
 
     public Vote GetVoteById(int id) => votes.FirstOrDefault(v => v.Id == id);
@@ -43,6 +44,13 @@ public class VoteService : IVoteService
         {
             Console.WriteLine($"Vote casted for {vote.Candidate} at {DateTime.UtcNow}");
         }
+    }
+    
+    // Implemented added function
+    public IDictionary<string, int> GetVoteCounts()
+    {
+        return votes.GroupBy(v => v.Candidate)
+                    .ToDictionary(g => g.Key, g => g.Count());
     }
 }
 
@@ -71,10 +79,11 @@ public class VoteController : ControllerBase
         return Ok(vote);
     }
 
+    // Fixed the CreateVote call
     [HttpPost]
     public IActionResult CreateVote([FromBody] string candidate)
     {
-        voteService.CreateTextBox(candidate);
+        voteService.CreateVote(candidate);
         return Ok();
     }
 
@@ -83,5 +92,12 @@ public class VoteController : ControllerBase
     {
         voteService.CastVote(id);
         return Ok();
+    }
+
+    // Added endpoint to get vote counts
+    [HttpGet("counts")]
+    public IActionResult GetVoteCounts()
+    {
+        return Ok(voteService.GetVoteCounts());
     }
 }
