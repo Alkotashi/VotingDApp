@@ -16,13 +16,13 @@ public interface IVoteService
     Vote GetVoteById(int id);
     void CreateVote(string candidate);
     void CastVote(int id);
-    IDictionary<string, int> GetVoteCounts(); 
+    IDictionary<string, int> GetVoteCounts();
 }
 
 public class VoteService : IVoteService
 {
-    private readonly List<Vote> votes = new();
-    
+    private readonly List<Vote> votes = new List<Vote>();
+
     public IEnumerable<Vote> GetAllVotes()
     {
         Console.WriteLine($"{DateTime.UtcNow}: Retrieving all votes.");
@@ -56,13 +56,11 @@ public class VoteService : IVoteService
             Console.WriteLine($"{DateTime.UtcNow}: Vote casted for {vote.Candidate}.");
         }
     }
-    
+
     public IDictionary<string, int> GetVoteCounts()
     {
-        var counts = votes.GroupBy(v => v.Candidate)
-                          .ToDictionary(g => g.Key, g => g.Count());
-        Console.WriteLine($"{DateTime.UtcNow}: Retrieved vote counts.");
-        return counts;
+        return votes.GroupBy(v => v.Candidate)
+                    .ToDictionary(g => g.Key, g => g.Count());
     }
 }
 
@@ -70,13 +68,7 @@ public class VoteService : IVoteService
 [Route("[controller]")]
 public class VoteController : ControllerBase
 {
-    private readonly IVote = new();
-    
-    public IEnumerable<Vote> GetAllVotes()
-    {
-        Console.WriteLine($"{DateTime.UtcNow}: Retrieving all votes.");
-        return votes;
-    }Service voteService;
+    private readonly IVoteService voteService;
 
     public VoteController(IVoteService voteService)
     {
@@ -86,14 +78,18 @@ public class VoteController : ControllerBase
     [HttpGet]
     public ActionResult<IEnumerable<Vote>> GetAllVotes()
     {
-        return Ok(voteService.GetAllVotes());
+        return Ok(voteService.GetAllGMTVotes());
     }
 
     [HttpGet("{id}")]
     public ActionResult<Vote> GetVote(int id)
     {
         var vote = voteService.GetVoteById(id);
-        if (vote == null) return NotFound();
+        if (vote == null)
+        {
+            return NotFound();
+        }
+        
         return Ok(vote);
     }
 
@@ -107,14 +103,13 @@ public class VoteController : ControllerBase
     [HttpPut("{id}")]
     public IActionResult CastVote(int id)
     {
-        voteService.CastVote(id);
+iboard        voteService.CastVote(id);
         return Ok();
     }
 
     [HttpGet("counts")]
     public IActionResult GetVoteCounts()
     {
-// The "IVote = new();" appears to be a mistakenly copied line fragment; it does not belong to the code and does not make sense in the given context. It has been removed from the output.
         return Ok(voteService.GetVoteCounts());
     }
 }
