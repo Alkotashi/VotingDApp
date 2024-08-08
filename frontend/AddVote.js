@@ -2,43 +2,43 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const AddVoteForm = () => {
-  const [newVote, setNewVote] = useState({
+  const [voteFormData, setVoteFormData] = useState({
     title: '',
     description: '',
   });
 
   const handleInputChange = (event) => {
-    setNewVote({ ...newVote, [event.target.name]: event.target.value });
+    setVoteFormData({ ...voteFormData, [event.target.name]: event.target.value });
   };
 
-  const handleVoteSubmission = async (event) => {
+  const handleSubmitVote = async (event) => {
     event.preventDefault();
-    const VOTE_ENDPOINT = `${process.env.REACT_APP_BACKEND_URL}/votes`;
+    const VOTE_API_ENDPOINT = `${process.env.REACT_APP_BACKEND_URL}/votes`;
     try {
-      await axios.post(VOTE_ENDPOINT, newVote);
+      await axios.post(VOTE_API_ENDPOINT, voteFormData);
       alert('Vote added successfully!');
-      resetVoteForm();
+      resetFormData();
     } catch (error) {
       console.error('Error adding vote:', error);
       alert('Failed to add vote.');
     }
   };
 
-  const resetVoteForm = () => {
-    setNewVote({
+  const resetFormData = () => {
+    setVoteFormData({
       title: '',
       description: '',
     });
   };
 
   return (
-    <form onSubmit={handleVoteSubmission}>
+    <form onSubmit={handleSubmitVote}>
       <label htmlFor="title">Title:</label>
       <input
         type="text"
         name="title"
         id="title"
-        value={newVote.title}
+        value={voteFormData.title}
         onChange={handleInputChange}
         required
       />
@@ -46,7 +46,7 @@ const AddVoteForm = () => {
       <textarea
         name="description"
         id="description"
-        value={newVote.description}
+        value={voteFormData.description}
         onChange={handleInputChange}
         required
       />
