@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const VoteComponent = ({ voteDetails, onVote }) => {
   const [selectedOption, setSelectedOption] = useState('');
   const [voteSubmitted, setVoteSubmitted] = useState(false);
   const [voteResults, setVoteResults] = useState({});
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    // Reset error when the user selects an option
+    if (selectedOption) {
+      setError('');
+    }
+  }, [selectedOption]);
 
   const handleOptionChange = (event) => {
     setSelectedOption(event.target.value);
@@ -12,14 +20,21 @@ const VoteComponent = ({ voteDetails, onVote }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (!selectedOption) {
-      alert("Please select an option before submitting.");
+      setError("Please select an option before submitting.");
       return;
     }
-    const newVoteResults = { ...voteResults };
-    newVoteResults[selectedOption] = (newVoteResults[selectedOption] || 0) + 1;
-    setVoteResults(newVoteResults);
-    onVote(selectedOption);
-    setVoteSubmitted(true);
+    try {
+      const newVoteResults = { ...voteResults };
+      newVoteResults[selectedOption] = (newVoteResults[selectedOption] || 0) + 1;
+      setVoteResults(newVoteResults);
+
+      onVote(selectedOption);
+      setVoteSubmitted(true);
+    } catch (e) {
+      // Log the error to the console for debugging purposes
+      console.error("Error submitting the vote: ", e);
+      setError("An error occurred while submitting your vote. Please try again.");
+    }
   };
 
   return (
@@ -40,6 +55,7 @@ const VoteComponent = ({ voteDetails, onVote }) => {
           </div>
         ))}
         <button type="submit">Vote</button>
+        {error && <div style={{ color: 'red', marginTop: '10px' }}>{error}</div>}
       </form>
       {voteSubmitted && (
         <div>
